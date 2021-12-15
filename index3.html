@@ -159,10 +159,10 @@
             for (let i = 1; i <= 10; i++) {
             promises.push(fetch(`https://api.wheretheiss.at/v1/satellites/25544/positions?timestamps=${time}`));
             //setInterval(2000);
-            }
+
             Promise.all(promises)
             .then(function handleData(data) {
-                return fetch("https://api.wheretheiss.at/v1/satellites") // should be returned 1 time
+                return fetch(`https://api.wheretheiss.at/v1/satellites/25544/positions?timestamps=${time}`) // should be returned 1 time
                 .then(response => {
                     if (response.ok) return console.log( response.json());
                     throw new Error(response.statusText);
@@ -170,7 +170,7 @@
             })
             .catch(function handleError(error) {
                 console.log("Error" + error);
-        });
+        });}
         }
 
         fetch100TImes();

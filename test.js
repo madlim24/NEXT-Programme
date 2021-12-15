@@ -1,5 +1,3 @@
-import fetch from 'node-fetch'
-globalThis.fetch = fetch
 
 Date.prototype.addHours = function(h) {
   this.setTime(this.getTime() + (h*60*60*1000));
@@ -14,7 +12,9 @@ Date.prototype.minusMinutes = function(h) {
 //console.log((new Date().addHours(4)));
 
 for( i = 1; i <= 10; i++){
-    console.log(new Date().minusMinutes(i))
+    //console.log(new Date().minusMinutes(i))
+    console.log(typeof(new Date()));
+    console.log(new Date());
 }
 
 //---------------------------------------------------//
@@ -39,3 +39,57 @@ async function getISS() {
 
       getISS();
       setInterval(getISS, 1000);
+
+//---------------------------------------------
+
+      /*async function latlongAPI() {
+        const axios = require('axios');
+        var input1 = latitude;
+        var input2 = longitude;
+        var api = 'https://api.positionstack.com/v1/reverse';
+        var apikey = '02ba8e2c6d1246c71db29c52c47e6c5e';
+        var params = input1 + input2 + apikey;
+      const params = {
+        access_key: '02ba8e2c6d1246c71db29c52c47e6c5e',
+        query: '1600 Pennsylvania Ave NW'
+      }
+
+      axios.get('https://api.positionstack.com/v1/reverse', {params})
+        .then(response => {
+          console.log(response.data);
+        }).catch(error => {
+          console.log(error);
+        });
+
+      }
+
+      latlongAPI();*/
+
+      //--------------------------------------------------------
+
+      /*function myFunction() {
+
+        var request;
+        var input1 = latitude;
+        var input2 = longitude;
+        var api = 'https://api.positionstack.com/v1/reverse/';
+        var access_key = '02ba8e2c6d1246c71db29c52c47e6c5e';
+        var sum =  input1 + input2 ;
+
+        request = new XMLHttpRequest();
+
+        request.open('GET', api, access_key, sum, true);
+        request.onload = function () {
+
+            var data = JSON.parse(this.response);
+            if (request.status >= 200 && request.status < 400) {
+                console.log(data);
+            } else {
+                console.log(input1, input2);
+            }
+        }
+
+        request.send();
+    }*/
+
+    //myFunction();

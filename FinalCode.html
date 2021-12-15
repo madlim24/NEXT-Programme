@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=\, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+      integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+      integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+      crossorigin=""
+    ></script>
+    <script
+      src="require.js"
+    ></script>
+    <style>
+      #issMap {
+        height: 360px;
+      }
+    </style>
+
+    <title>Fetch JSON from API and map lat lon</title>
+  </head>
+  <body>
+
+     <!--Insert Form-->
+     <form action="/index2.html">
+        <label for="birthdaytime">Insert Date and Time:</label> <br>
+        <input type="datetime-local" id="datetimeInput"> Date & Time
+        <!--<button onclick="dateConverter()" >Submit</button>-->
+        <input type="button" onclick="todo()" value="Submit form">
+     </form>
+
+
+
+    <h3 id="timestamp"> TImestamp Convert</h3>
+
+    <!------------------------------>
+
+    <h1>Where is the ISS?</h1>
+
+    <p>
+      latitude: <span id="lat"></span>°<br />
+      longitude: <span id="lon"></span>°
+    </p>
+
+    <ul id="myList"></ul>
+
+    <div id="issMap"></div>
+
+    <script>
+        //---------------------- TIme FUnction ------------------
+
+      Date.prototype.addHours = function(h) {
+        this.setTime(this.getTime() + (h*60*60*1000));
+        return this;
+        }
+
+      Date.prototype.minusMinutes = function(h) {
+        this.setTime(this.getTime() - (h*60*1000));
+        return this;
+        }
+
+      Date.prototype.addMinutes = function(h) {
+        this.setTime(this.getTime() + (h*60*1000));
+        return this;
+      }
+
+        //console.log((new Date().addHours(4)));
+        //------------------------End of TIme Function---------------------
+
+
+      // Making a map and tiles
+      const mymap = L.map('issMap').setView([0, 0], 1);
+      const attribution =
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+      const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      inputDateTime = new Date(document.getElementById('datetimeInput').value); //get date and time inserted by user
+      console.log(typeof(inputDateTime));
+      const api_url = `https://api.wheretheiss.at/v1/satellites/25544/positions?timestamps=${inputDateTime}`;
+
+
+      const tiles = L.tileLayer(tileUrl, { attribution });
+      tiles.addTo(mymap);
+
+
+      // Making a marker with a custom icon
+      const issIcon = L.icon({
+        iconUrl: 'iss200.png',
+        iconSize: [50, 32],
+        iconAnchor: [25, 16]
+      });
+      let marker = L.marker([0, 0], { icon: issIcon }).addTo(mymap);
+
+      mymap.on('zoomend', function() {
+        const zoom = mymap.getZoom() + 1;
+        const w = 50 * zoom;
+        const h = 32 * zoom;
+        issIcon.options.iconSize = [w, h];
+        issIcon.options.iconAnchor = [w / 2, h / 2];
+        mymap.removeLayer(marker);
+        let latlng = marker.getLatLng();
+        marker = L.marker([0, 0], { icon: issIcon }).addTo(mymap);
+        marker.setLatLng(latlng);
+      });
+
+        //----------------------------------------GET ISS Function ------------------------------------------------
+      async function getISS() {
+        const response = await fetch(api_url);
+        const data = await response.json();
+        //const { latitude, longitude } = data;
+        latitude = data.latitude;
+        longitude = data.longitude;
+
+        marker.setLatLng([latitude, longitude]);
+        if (firstTime) {
+          mymap.setView([latitude, longitude], 2);
+          firstTime = false;
+        }
+        //---------------------------------------------------------------------------------------------
+
+        //get city name from the lattitude and longitude using positionstack API
+        var request;
+        var input1 = latitude;
+        var input2 = longitude;
+        let access_key = '02ba8e2c6d1246c71db29c52c47e6c5e';
+
+        var api = `http://api.positionstack.com/v1/reverse?access_key=${access_key}&query=${input1},${input2}`;
+        //http://api.positionstack.com/v1/reverse?access_key=02ba8e2c6d1246c71db29c52c47e6c5e&query=40.7638435,-73.9729691
+
+        request = new XMLHttpRequest();
+
+        request.open('GET', api, true);
+        request.onload = function () {
+
+            var data = JSON.parse(this.response);
+            if (request.status >= 200 && request.status < 400) {
+                console.log(data);
+            } else {
+                console.log(input1, input2);
+            }
+        }
+
+        request.send();
+
+        document.getElementById('lat').textContent = latitude.toFixed(2);
+        document.getElementById('lon').textContent = longitude.toFixed(2);
+        console.log(data.latitude);
+      }
+
+      //getISS();
+      //setInterval(getISS, 10000);
+
+      //Change date to UNIX Timestamp
+      async function dateConverter() {
+        inputDateTime2 = document.getElementById('datetimeInput').value;
+        //timestamp = new Date().getTime()/1000;
+        timestamp = Date.parse(inputDateTime)/1000;
+        document.getElementById('timestamp').textContent = timestamp
+        //document.getElementById('timestamp').textContent = inputDateTime;
+      }
+
+      //--------------------------------------------------------------------------------
+
+      let firstTime = true;
+
+      async function tenMinBefore() {
+        for(i=1; i<=10; i++){
+            inputDateTime.minusMinutes(i);
+            inputDateTime = Date.parse(inputDateTime)/1000;
+            inputDateTime.toString();
+            getISS();
+            setInterval(getISS(), 2000)
+        }
+      }
+
+      async function oneHourAfter() {
+        for(i=1; i<=60; i++){
+            inputDateTime = inputDateTime.addMinutes(i);
+            getISS();
+        }
+      }
+
+      //----------------------------------------------------------------------------------------------
+
+
+      function todo(){
+        dateConverter(); tenMinBefore();
+      }
+
+    </script>
+  </body>
+</html>

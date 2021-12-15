@@ -15,6 +15,9 @@
       integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
       crossorigin=""
     ></script>
+    <script
+      src="require.js"
+    ></script>
     <style>
       #issMap {
         height: 360px;
@@ -48,6 +51,8 @@
       longitude: <span id="lon"></span>°
     </p>
 
+    <ul id="myList"></ul>
+
     <div id="issMap"></div>
 
     <script>
@@ -80,6 +85,7 @@
         marker.setLatLng(latlng);
       });
 
+
       const api_url = 'https://api.wheretheiss.at/v1/satellites/25544';
 
       let firstTime = true;
@@ -94,13 +100,40 @@
           mymap.setView([latitude, longitude], 2);
           firstTime = false;
         }
+        //---------------------------------------------------------------------------------------------
+
+        //get city name from the lattitude and longitude usin positionstack API
+        var request;
+        var input1 = latitude;
+        var input2 = longitude;
+        let access_key = '02ba8e2c6d1246c71db29c52c47e6c5e';
+
+        var api = `http://api.positionstack.com/v1/reverse?access_key=${access_key}&query=${input1},${input2}`;
+        //http://api.positionstack.com/v1/reverse?access_key=02ba8e2c6d1246c71db29c52c47e6c5e&query=40.7638435,-73.9729691
+
+        request = new XMLHttpRequest();
+
+        request.open('GET', api, true);
+        request.onload = function () {
+
+            var data = JSON.parse(this.response);
+            if (request.status >= 200 && request.status < 400) {
+                console.log(data);
+            } else {
+                console.log(input1, input2);
+            }
+        }
+
+        request.send();
+
         document.getElementById('lat').textContent = latitude.toFixed(2);
         document.getElementById('lon').textContent = longitude.toFixed(2);
       }
 
       getISS();
-      setInterval(getISS, 1000);
+      setInterval(getISS, 10000);
 
+      //Change date to UNIX Timestamp
       async function dateConverter() {
         inputDate = document.getElementById('dateInput');
         inputTime = document.getElementById('timeInput');
